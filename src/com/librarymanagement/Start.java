@@ -1,198 +1,130 @@
 package com.librarymanagement;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-// Book Class
-class Book {
-	private String title;
-	private String author;
-	private String isbn;
-	private String genre;
-	private int quantity;
-
-	public Book(String title, String author, String isbn, String genre, int quantity) {
-		this.title = title;
-		this.author = author;
-		this.isbn = isbn;
-		this.genre = genre;
-		this.quantity = quantity;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public String getAuthor() {
-		return author;
-	}
-
-	public String getIsbn() {
-		return isbn;
-	}
-
-	public String getGenre() {
-		return genre;
-	}
-
-	public int getQuantity() {
-		return quantity;
-	}
-
-	public void setQuantity(int quantity) {
-		this.quantity = quantity;
-	}
-
-	@Override
-	public String toString() {
-		return "Book{" + "Title='" + title + '\'' + ", Author='" + author + '\'' + ", ISBN='" + isbn + '\''
-				+ ", Genre='" + genre + '\'' + ", Quantity=" + quantity + '}';
-	}
-}
-
-// Borrower Class
-class Borrower {
-	private String name;
-	private String contactDetails;
-	private String membershipId;
-
-	public Borrower(String name, String contactDetails, String membershipId) {
-		this.name = name;
-		this.contactDetails = contactDetails;
-		this.membershipId = membershipId;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public String getMembershipId() {
-		return membershipId;
-	}
-
-	@Override
-	public String toString() {
-		return "Borrower{" + "Name='" + name + '\'' + ", ContactDetails='" + contactDetails + '\'' + ", MembershipID='"
-				+ membershipId + '\'' + '}';
-	}
-}
-
-// Library Management System
-class LibraryManagementSystem {
-	private final Map<String, Book> books = new HashMap<>();
-	private final Map<String, Borrower> borrowers = new HashMap<>();
-	private final Map<String, Map<String, String>> borrowedBooks = new HashMap<>();
-
-	// Book Management
-	public void addBook(Book book) {
-		books.put(book.getIsbn(), book);
-		System.out.println("Book added: " + book);
-	}
-
-	public void updateBook(String isbn, int quantity) {
-		Book book = books.get(isbn);
-		if (book != null) {
-			book.setQuantity(quantity);
-			System.out.println("Updated book: " + book);
-		} else {
-			System.out.println("Book not found!");
-		}
-	}
-
-	public void removeBook(String isbn) {
-		if (books.remove(isbn) != null) {
-			System.out.println("Book removed successfully.");
-		} else {
-			System.out.println("Book not found!");
-		}
-	}
-
-	// Borrower Management
-	public void addBorrower(Borrower borrower) {
-		borrowers.put(borrower.getMembershipId(), borrower);
-		System.out.println("Borrower added: " + borrower);
-	}
-
-	public void removeBorrower(String membershipId) {
-		if (borrowers.remove(membershipId) != null) {
-			System.out.println("Borrower removed successfully.");
-		} else {
-			System.out.println("Borrower not found!");
-		}
-	}
-
-	// Book Borrowing
-	public void borrowBook(String isbn, String membershipId, String dueDate) {
-		Book book = books.get(isbn);
-		Borrower borrower = borrowers.get(membershipId);
-
-		if (book != null && borrower != null) {
-			if (book.getQuantity() > 0) {
-				book.setQuantity(book.getQuantity() - 1);
-				borrowedBooks.computeIfAbsent(membershipId, k -> new HashMap<>()).put(isbn, dueDate);
-				System.out.println("Book borrowed successfully by: " + borrower.getName());
-			} else {
-				System.out.println("Book not available.");
-			}
-		} else {
-			System.out.println("Invalid book or borrower details.");
-		}
-	}
-
-	public void returnBook(String isbn, String membershipId) {
-		Map<String, String> borrowerBooks = borrowedBooks.get(membershipId);
-		if (borrowerBooks != null && borrowerBooks.remove(isbn) != null) {
-			books.get(isbn).setQuantity(books.get(isbn).getQuantity() + 1);
-			System.out.println("Book returned successfully.");
-		} else {
-			System.out.println("Book was not borrowed or invalid details.");
-		}
-	}
-
-	// Book Search
-	public void searchBook(String query) {
-		List<Book> results = books.values().stream()
-				.filter(book -> book.getTitle().toLowerCase().contains(query.toLowerCase())
-						|| book.getAuthor().toLowerCase().contains(query.toLowerCase())
-						|| book.getGenre().toLowerCase().contains(query.toLowerCase()))
-				.collect(Collectors.toList());
-
-		if (results.isEmpty()) {
-			System.out.println("No books found.");
-		} else {
-			results.forEach(System.out::println);
-		}
-	}
-}
+import java.util.Scanner;
 
 // Main Class
 public class Start {
 	public static void main(String[] args) {
-		LibraryManagementSystem lms = new LibraryManagementSystem();
+		Scanner scanner = new Scanner(System.in);
+		boolean runAgain;
 
-		// Adding Books
-		lms.addBook(new Book("Java Programming", "John Doe", "ISBN001", "Programming", 5));
-		lms.addBook(new Book("Python Basics", "Jane Smith", "ISBN002", "Programming", 3));
+		do {
+			LibraryManagementSystem lms = new LibraryManagementSystem();
+			System.out.println("These 5 books are added by default:");
+			lms.addBook(new Book("Java Programming", "John Doe", "9781234567890", "Programming", 5));
+			lms.addBook(new Book("Python Basics", "Jane Smith", "9780987654321", "Programming", 3));
+			lms.addBook(new Book("Clean Code", "Robert C. Martin", "9780132350884", "Software Engineering", 4));
+			lms.addBook(
+					new Book("The Pragmatic Programmer", "Andrew Hunt", "9780201616224", "Software Engineering", 2));
+			lms.addBook(new Book("Design Patterns", "Erich Gamma", "9780201633610", "Programming", 3));
 
-		// Adding Borrowers
-		lms.addBorrower(new Borrower("Alice", "1234567890", "M001"));
-		lms.addBorrower(new Borrower("Bob", "9876543210", "M002"));
+			int choice;
+			do {
+				System.out.println("\n----- Library Management System -----");
+				System.out.println("1. Add Book");
+				System.out.println("2. Remove Book");
+				System.out.println("3. Update Book Quantity");
+				System.out.println("4. Add Borrower");
+				System.out.println("5. Remove Borrower");
+				System.out.println("6. Borrow Book");
+				System.out.println("7. Return Book");
+				System.out.println("8. Search Book");
+				System.out.println("9. Exit");
+				System.out.println("10. List All Available Books");
 
-		// Borrowing Books
-		lms.borrowBook("ISBN001", "M001", "2024-11-30");
+				System.out.print("Enter your choice: ");
+				choice = scanner.nextInt();
+				scanner.nextLine(); // Consume the newline character
 
-		// Returning Books
-		lms.returnBook("ISBN001", "M001");
+				switch (choice) {
+				case 1: // Add Book
+					System.out.print("Enter title: ");
+					String title = scanner.nextLine();
+					System.out.print("Enter author: ");
+					String author = scanner.nextLine();
+					System.out.print("Enter ISBN: ");
+					String isbn = scanner.nextLine();
+					System.out.print("Enter genre: ");
+					String genre = scanner.nextLine();
+					System.out.print("Enter quantity: ");
+					int quantity = scanner.nextInt();
+					lms.addBook(new Book(title, author, isbn, genre, quantity));
+					break;
 
-		// Searching Books
-		lms.searchBook("Java");
+				case 2: // Remove Book
+					System.out.print("Enter ISBN of the book to remove: ");
+					String removeIsbn = scanner.nextLine();
+					lms.removeBook(removeIsbn);
+					break;
 
-		// Removing a Book
-		lms.removeBook("ISBN001");
+				case 3: // Update Book Quantity
+					System.out.print("Enter ISBN of the book to update: ");
+					String updateIsbn = scanner.nextLine();
+					System.out.print("Enter new quantity: ");
+					int newQuantity = scanner.nextInt();
+					lms.updateBook(updateIsbn, newQuantity);
+					break;
 
-		// Removing a Borrower
-		lms.removeBorrower("M001");
+				case 4: // Add Borrower
+					System.out.print("Enter borrower's name: ");
+					String borrowerName = scanner.nextLine();
+					System.out.print("Enter borrower's contact details: ");
+					String contactDetails = scanner.nextLine();
+					System.out.print("Enter borrower's membership ID: ");
+					String membershipId = scanner.nextLine();
+					lms.addBorrower(new Borrower(borrowerName, contactDetails, membershipId));
+					break;
+
+				case 5: // Remove Borrower
+					System.out.print("Enter membership ID of the borrower to remove: ");
+					String removeMembershipId = scanner.nextLine();
+					lms.removeBorrower(removeMembershipId);
+					break;
+
+				case 6: // Borrow Book
+					System.out.print("Enter ISBN of the book to borrow: ");
+					String borrowIsbn = scanner.nextLine();
+					System.out.print("Enter borrower's membership ID: ");
+					String borrowMembershipId = scanner.nextLine();
+					System.out.print("Enter due date (YYYY-MM-DD): ");
+					String dueDate = scanner.nextLine();
+					lms.borrowBook(borrowIsbn, borrowMembershipId, dueDate);
+					break;
+
+				case 7: // Return Book
+					System.out.print("Enter ISBN of the book to return: ");
+					String returnIsbn = scanner.nextLine();
+					System.out.print("Enter borrower's membership ID: ");
+					String returnMembershipId = scanner.nextLine();
+					lms.returnBook(returnIsbn, returnMembershipId);
+					break;
+
+				case 8: // Search Book
+					System.out.print("Enter search query (title, author, or genre): ");
+					String query = scanner.nextLine();
+					lms.searchBook(query);
+					break;
+
+				case 9: // Exit
+					System.out.println("Exiting the Library Management System.");
+					break;
+
+				case 10: // List All Available Books
+					lms.listAllBooks();
+					break;
+
+				default:
+					System.out.println("Invalid choice! Please try again.");
+				}
+			} while (choice != 9);
+
+			System.out.print("Do you want to start again? (yes/no): ");
+			String restartChoice = scanner.nextLine().trim().toLowerCase();
+			runAgain = restartChoice.equals("yes");
+
+		} while (runAgain);
+
+		System.out.println("Goodbye");
+		scanner.close();
 	}
 }
